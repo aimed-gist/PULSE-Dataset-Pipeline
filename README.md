@@ -527,7 +527,7 @@ Contributions are welcome! Please:
 
 For questions or issues:
 - Open an issue on GitHub
-- Contact: [your-email@domain.com]
+- Contact: [mass3758@gmail.com]
 
 ## Acknowledgments
 
@@ -540,3 +540,4 @@ This pipeline was developed for processing wearable heart rate data for scientif
 - Complete pipeline implementation
 - All 8 processing steps
 - Comprehensive documentation
+
