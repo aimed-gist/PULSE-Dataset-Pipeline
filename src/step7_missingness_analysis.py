@@ -334,19 +334,30 @@ def run_step7(cfg: Step7Config) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
 
 def main():
-    """Example usage of Step 7."""
+    """
+    Example usage of Step 7.
+
+    This is a template for running Step 7. Modify the paths below to match
+    your data location before running.
+    """
     from pathlib import Path
 
-    # Configure paths
-    base_dir = Path("/app/ai_worker/data_anonymization")
-    key_csv = base_dir / "10-code/Processed_wearable_dataset/step5/daily_adherence_pass_subjects.csv"
-    activity_csv = base_dir / "03-finalPreparationData/4-updateColumn&Type/activity_daily.csv"
-    resting_csv = base_dir / "03-finalPreparationData/4-updateColumn&Type/heartrate_resting_daily.csv"
-    daily_hr_csv = base_dir / "10-code/Processed_wearable_dataset/step6/daily_hr_stats__valid_days.csv"
-    sleep_csv = base_dir / "03-finalPreparationData/4-updateColumn&Type/sleep_summary_daily.csv"
-    outdir = base_dir / "10-code/Processed_wearable_dataset/step7"
+    # =========================================================================
+    # CONFIGURATION - Modify these paths for your environment
+    # =========================================================================
+    # Input from previous pipeline steps
+    key_csv = Path("output/step5/daily_adherence_pass_subjects.csv")     # Valid participants from Step 5
+    daily_hr_csv = Path("output/step6/daily_hr_stats__valid_days.csv")   # HR stats from Step 6
 
-    # Metrics to analyze
+    # Additional data sources (daily activity and sleep data)
+    activity_csv = Path("data/activity_daily.csv")                        # Daily activity data
+    resting_csv = Path("data/heartrate_resting_daily.csv")                # Daily resting HR data
+    sleep_csv = Path("data/sleep_summary_daily.csv")                      # Daily sleep summary data
+
+    # Output directory
+    outdir = Path("output/step7")                                          # Output directory
+
+    # Metrics to analyze for missingness
     metrics = [
         'steps', 'distance', 'calories', 'resting_hr',
         'daily_mean', 'daily_max', 'daily_min',
@@ -357,6 +368,11 @@ def main():
         'cnt_asleep', 'cnt_restless', 'cnt_awake'
     ]
 
+    # Analysis settings
+    filter_valid_days = True                                               # Filter to valid days only
+    collapse_duplicates_by_mean = True                                     # Average duplicate records
+    # =========================================================================
+
     # Create configuration
     config = Step7Config(
         key_csv=key_csv,
@@ -366,12 +382,13 @@ def main():
         sleep_csv=sleep_csv,
         outdir=outdir,
         metrics=metrics,
-        filter_valid_days=True,
-        collapse_duplicates_by_mean=True
+        filter_valid_days=filter_valid_days,
+        collapse_duplicates_by_mean=collapse_duplicates_by_mean
     )
 
     # Run step
     merged, report = run_step7(config)
+    return merged, report
 
 
 if __name__ == "__main__":

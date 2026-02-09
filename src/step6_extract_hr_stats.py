@@ -199,26 +199,38 @@ def run_step6(cfg: Step6Config) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
 
 def main():
-    """Example usage of Step 6."""
+    """
+    Example usage of Step 6.
+
+    This is a template for running Step 6. Modify the paths below to match
+    your data location before running.
+    """
     from pathlib import Path
 
-    # Configure paths
-    base_dir = Path("/app/ai_worker/data_anonymization")
-    key_csv = base_dir / "10-code/Processed_wearable_dataset/step4/daily_adherence.csv"
-    hr_1min_csv = base_dir / "10-code/Processed_wearable_dataset/step3/hr_1min_outlier_cleaned.csv"
-    outdir = base_dir / "10-code/Processed_wearable_dataset/step6"
+    # =========================================================================
+    # CONFIGURATION - Modify these paths for your environment
+    # =========================================================================
+    key_csv = Path("output/step4/daily_adherence.csv")              # Input: daily adherence from Step 4
+    hr_1min_csv = Path("output/step3/hr_1min_outlier_cleaned.csv")  # Input: cleaned HR data from Step 3
+    outdir = Path("output/step6")                                    # Output directory
+
+    # Statistics extraction settings
+    out_csv_name = "daily_hr_stats_valid_days.csv"                   # Output file name
+    filter_using_is_valid_day = True                                 # Filter to valid days only (from Step 4)
+    # =========================================================================
 
     # Create configuration
     config = Step6Config(
         key_csv=key_csv,
         hr_1min_csv=hr_1min_csv,
         outdir=outdir,
-        out_csv_name="daily_hr_stats_valid_days.csv",
-        filter_using_is_valid_day=True
+        out_csv_name=out_csv_name,
+        filter_using_is_valid_day=filter_using_is_valid_day
     )
 
     # Run step
     daily_stats, summary = run_step6(config)
+    return daily_stats, summary
 
 
 if __name__ == "__main__":

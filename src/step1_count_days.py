@@ -110,24 +110,36 @@ def run_step1(cfg: Step1Config) -> pd.DataFrame:
 
 
 def main():
-    """Example usage of Step 1."""
+    """
+    Example usage of Step 1.
+
+    This is a template for running Step 1. Modify the paths below to match
+    your data location before running.
+    """
     from pathlib import Path
 
-    # Configure paths
-    base_dir = Path("/app/ai_worker/data_anonymization")
-    input_csv = base_dir / "03-finalPreparationData/4-updateColumn&Type/heartrate_minute.csv"
-    outdir = base_dir / "10-code/Processed_wearable_dataset/step1"
+    # =========================================================================
+    # CONFIGURATION - Modify these paths for your environment
+    # =========================================================================
+    input_csv = Path("data/heartrate_minute.csv")  # Input: 1-minute HR data
+    outdir = Path("output/step1")                   # Output directory
+
+    # Optional: Set day range (None = use all available days)
+    day_start = 0      # Starting day index (default: 0)
+    day_end = None     # Ending day index (default: None = max observed day)
+    # =========================================================================
 
     # Create configuration
     config = Step1Config(
         input_csv=input_csv,
         outdir=outdir,
-        day_start=0,
-        day_end=None
+        day_start=day_start,
+        day_end=day_end
     )
 
     # Run step
     global_counts = run_step1(config)
+    return global_counts
 
 
 if __name__ == "__main__":

@@ -144,25 +144,38 @@ def run_step5(cfg: Step5Config) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFram
 
 
 def main():
-    """Example usage of Step 5."""
+    """
+    Example usage of Step 5.
+
+    This is a template for running Step 5. Modify the paths below to match
+    your data location before running.
+    """
     from pathlib import Path
 
-    # Configure paths
-    base_dir = Path("/app/ai_worker/data_anonymization")
-    input_csv = base_dir / "10-code/Processed_wearable_dataset/step4/daily_adherence.csv"
-    outdir = base_dir / "10-code/Processed_wearable_dataset/step5"
+    # =========================================================================
+    # CONFIGURATION - Modify these paths for your environment
+    # =========================================================================
+    input_csv = Path("output/step4/daily_adherence.csv")  # Input: daily adherence data from Step 4
+    outdir = Path("output/step5")                          # Output directory
+
+    # Valid participant criteria
+    min_consecutive_days = 7                               # Minimum consecutive valid days required
+    day_start = None                                       # Optional: Starting day index (None = use all)
+    day_end = None                                         # Optional: Ending day index (None = use all)
+    # =========================================================================
 
     # Create configuration
     config = Step5Config(
         input_csv=input_csv,
         outdir=outdir,
-        min_consecutive_days=7,
-        day_start=None,
-        day_end=None
+        min_consecutive_days=min_consecutive_days,
+        day_start=day_start,
+        day_end=day_end
     )
 
     # Run step
     summary, daily_pass, subjects_pass, subjects_fail = run_step5(config)
+    return summary, daily_pass, subjects_pass, subjects_fail
 
 
 if __name__ == "__main__":

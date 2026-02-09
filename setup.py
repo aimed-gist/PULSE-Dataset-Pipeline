@@ -10,7 +10,7 @@ long_description = readme_file.read_text(encoding="utf-8") if readme_file.exists
 setup(
     name="heart-rate-pipeline",
     version="1.0.0",
-    author="Heart Rate Data Pipeline Team",
+    author="AI-Med Lab",
     author_email="your-email@domain.com",
     description="A modular pipeline for processing wearable heart rate data",
     long_description=long_description,
@@ -40,11 +40,6 @@ setup(
             "pytest-cov>=2.10.0",
             "black>=21.0",
             "flake8>=3.8.0",
-        ],
-    },
-    entry_points={
-        "console_scripts": [
-            "hr-pipeline=src.run_pipeline:main",
         ],
     },
 )

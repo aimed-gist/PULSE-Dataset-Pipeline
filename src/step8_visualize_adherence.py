@@ -251,25 +251,38 @@ def run_visualization(cfg: VisualizationConfig) -> pd.DataFrame:
 
 
 def main():
-    """Example usage of visualization."""
+    """
+    Example usage of Step 8 (Visualization).
+
+    This is a template for running Step 8. Modify the paths below to match
+    your data location before running.
+    """
     from pathlib import Path
 
-    # Configure paths
-    base_dir = Path("/app/ai_worker/data_anonymization")
-    input_csv = base_dir / "10-code/Processed_wearable_dataset/step3/hr_1min_outlier_cleaned.csv"
-    outdir = base_dir / "10-code/Processed_wearable_dataset/visualization"
+    # =========================================================================
+    # CONFIGURATION - Modify these paths for your environment
+    # =========================================================================
+    input_csv = Path("output/step3/hr_1min_outlier_cleaned.csv")  # Input: outlier-cleaned HR data from Step 3
+    outdir = Path("output/step8_visualization")                    # Output directory
+
+    # Visualization settings
+    normalize_time = True                                          # Normalize time format to HH:MM:SS
+    expected_minutes_per_day = 1440                                # Expected minutes per day (24h * 60min)
+    threshold_ratio = 0.80                                         # Threshold for reference line (80%)
+    # =========================================================================
 
     # Create configuration
     config = VisualizationConfig(
         input_csv=input_csv,
         outdir=outdir,
-        normalize_time=True,
-        expected_minutes_per_day=1440,
-        threshold_ratio=0.80
+        normalize_time=normalize_time,
+        expected_minutes_per_day=expected_minutes_per_day,
+        threshold_ratio=threshold_ratio
     )
 
     # Run visualization
     compliance_data = run_visualization(config)
+    return compliance_data
 
 
 if __name__ == "__main__":
