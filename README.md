@@ -14,7 +14,7 @@ This pipeline processes raw 1-minute heart rate data from wearable devices throu
 - **Step 1: Collection Day Counting** - Establishes baseline patient-days and recording statistics
 - **Step 2: Duplicate Removal** - Identifies and removes duplicate 1-minute records
 - **Step 3: Outlier Removal** - Removes physiologically implausible heart rate values
-- **Step 4: Valid Day Filtering** - Filters days based on wear adherence (≥80% or ≥1140 minutes)
+- **Step 4: Valid Day Filtering** - Filters days based on wear adherence (≥80% or ≥1152 minutes)
 - **Step 5: Valid Participant Filtering** - Retains participants with ≥7 consecutive valid days
 - **Step 6: HR Statistics Extraction** - Calculates daily mean, max, min heart rate
 - **Step 7: Missingness Analysis** - Assesses missing data across all wearable metrics
@@ -53,22 +53,6 @@ python -c "import pandas; import numpy; print('Installation successful!')"
 
 ## Quick Start
 
-### Option 1: Run Complete Pipeline
-
-Run all steps sequentially with a single command:
-
-```bash
-python -m src.run_pipeline \
-  --input-hr /path/to/heartrate_minute.csv \
-  --input-activity /path/to/activity_daily.csv \
-  --input-resting-hr /path/to/heartrate_resting_daily.csv \
-  --input-daily-hr /path/to/heartrate_summary_daily.csv \
-  --input-sleep /path/to/sleep_summary_daily.csv \
-  --output /path/to/output
-```
-
-### Option 2: Run Individual Steps
-
 Execute steps one at a time:
 
 ```python
@@ -81,15 +65,7 @@ config = Step1Config(
     outdir=Path("output/step1")
 )
 
-patient_day, patient_counts, global_counts = run_step1(config)
-```
-
-### Option 3: Use Provided Script
-
-Modify and run the provided example script:
-
-```bash
-python scripts/run_all_steps.py
+global_counts = run_step1(config)
 ```
 
 ## Input Data Format
@@ -100,17 +76,17 @@ python scripts/run_all_steps.py
 
 | Column | Type | Description | Example |
 |--------|------|-------------|---------|
-| subject_id | string | Unique participant identifier | "S001" |
+| subject_id | string | Unique participant identifier | "subject.001" |
 | date | string | Day index in format "dayN" | "day0", "day1" |
 | time | string | Time in HH:MM:SS format | "09:30:00" |
-| hr | numeric | Heart rate in beats per minute | "72" |
+| hr | numeric | Heart rate in beats per minute | "72.0" |
 
 **Example:**
 ```csv
 subject_id,date,time,hr
-S001,day0,00:00:00,72
-S001,day0,00:01:00,74
-S001,day0,00:02:00,71
+subject.001,day0,16:38:00,74.0
+subject.001,day0,16:39:00,88.0
+subject.001,day0,16:40:00,93.0
 ```
 
 ### Optional Inputs: Daily Metric Sources
@@ -139,8 +115,6 @@ S001,day0,00:02:00,71
 - HR value ≠ 0
 
 **Outputs:**
-- `patient_day_counts.csv` - Recording stats per patient-day
-- `patient_counts.csv` - Summary per patient
 - `global_counts.csv` - Overall cohort statistics
 
 **Usage:**
@@ -154,7 +128,7 @@ config = Step1Config(
     day_end=None  # Use None for max observed day
 )
 
-patient_day, patient_counts, global_counts = run_step1(config)
+global_counts = run_step1(config)
 ```
 
 ### Step 2: Remove Duplicates
@@ -166,9 +140,7 @@ patient_day, patient_counts, global_counts = run_step1(config)
 
 **Outputs:**
 - `hr_1min_deduped.csv` - Deduplicated dataset
-- `duplicates_all.csv` - All duplicate records
-- `duplicates_extra.csv` - Removed duplicates
-- `step2_input_summary.csv` - Filtering statistics
+- `step2_summary.csv` - Filtering statistics
 
 **Usage:**
 ```python
@@ -182,7 +154,7 @@ config = Step2Config(
     normalize_time=True
 )
 
-deduped, duplicates_all, duplicates_extra, summary = run_step2(config)
+df_deduped, summary = run_step2(config)
 ```
 
 ### Step 3: Remove Outliers
@@ -199,7 +171,6 @@ deduped, duplicates_all, duplicates_extra, summary = run_step2(config)
 
 **Outputs:**
 - `hr_1min_outlier_cleaned.csv` - Cleaned dataset
-- `hr_1min_outliers.csv` - Outlier records with reasons
 - `outlier_summary.csv` - Outlier statistics
 
 **Usage:**
@@ -215,7 +186,7 @@ config = Step3Config(
     normalize_time=True
 )
 
-cleaned, outliers, summary = run_step3(config)
+cleaned, summary = run_step3(config)
 ```
 
 ### Step 4: Filter Valid Days
@@ -223,14 +194,12 @@ cleaned, outliers, summary = run_step3(config)
 **Purpose:** Identify days with sufficient wear adherence.
 
 **Valid Day Criteria:**
-- Worn minutes ≥ 1140 (80% of 1440 minutes per day)
+- Worn minutes ≥ 1152 (80% of 1440 minutes per day)
 - Worn minute: HR > 0, unique (subject_id, day_index, minute_of_day)
 
 **Outputs:**
 - `daily_adherence.csv` - All days with adherence metrics
-- `daily_adherence__valid_days.csv` - Valid days only
-- `valid_day_counts_by_subject.csv` - Count per subject
-- `valid_day_summary.csv` - Cohort summary
+- `step4_summary.csv` - Cohort summary
 
 **Usage:**
 ```python
@@ -241,12 +210,12 @@ config = Step4Config(
     outdir=Path("output/step4"),
     expected_minutes_per_day=1440,
     threshold_ratio=0.80,
-    threshold_minutes=1140,
+    threshold_minutes=1152,
     force_min_day_to_zero=True,
     normalize_time=True
 )
 
-daily, valid_days, valid_counts, summary = run_step4(config)
+daily, summary = run_step4(config)
 ```
 
 ### Step 5: Filter Valid Participants
@@ -258,7 +227,6 @@ daily, valid_days, valid_counts, summary = run_step4(config)
 - Consecutive = day_index increases by 1 each day (no gaps)
 
 **Outputs:**
-- `subject_consecutive_summary.csv` - All subjects with run lengths
 - `subjects_pass.csv` - Valid subjects only
 - `subjects_fail.csv` - Excluded subjects
 - `daily_adherence__pass_subjects.csv` - All days for valid subjects
@@ -289,6 +257,7 @@ summary, daily_pass, subjects_pass, subjects_fail = run_step5(config)
 
 **Outputs:**
 - `daily_hr_stats__valid_days.csv`
+- `step6_summary.csv`
 
 **Usage:**
 ```python
@@ -302,7 +271,7 @@ config = Step6Config(
     filter_using_is_valid_day=True
 )
 
-daily_stats = run_step6(config)
+daily_stats, summary = run_step6(config)
 ```
 
 ### Step 7: Missingness Analysis
@@ -314,9 +283,8 @@ daily_stats = run_step6(config)
 - Numeric 0 ≠ missing (valid measurement)
 
 **Outputs:**
-- `merged_metrics.csv` - All metrics merged on valid subject-days
-- `missingness_report.csv` - Summary table
-- `missing_by_metric/missing_rows__<metric>.csv` - Per-metric missing rows
+- `step7_summary.csv` - Summary table
+
 
 **Usage:**
 ```python
@@ -342,7 +310,7 @@ merged, report = run_step7(config)
 **Purpose:** Generate wear adherence distribution histogram.
 
 **Outputs:**
-- `hist_daily_compliance.pdf/svg/png` - Histogram plots
+- `hist_daily_compliance.png` - Histogram plots
 - `daily_compliance.csv` - Daily compliance data
 
 **Usage:**
@@ -371,7 +339,7 @@ MAX_HR = 163.0  # bpm
 
 # Adherence thresholds
 ADHERENCE_THRESHOLD_RATIO = 0.80  # 80%
-ADHERENCE_THRESHOLD_MINUTES = 1140  # 0.80 * 1440
+ADHERENCE_THRESHOLD_MINUTES = 1152  # 0.80 * 1440 = 1152
 
 # Participant filtering
 MIN_CONSECUTIVE_DAYS = 7
@@ -414,39 +382,26 @@ Edit default values in `src/config.py`.
 ```
 output/
 ├── step1/
-│   ├── patient_day_counts.csv
-│   ├── patient_counts.csv
 │   └── global_counts.csv
 ├── step2/
 │   ├── hr_1min_deduped.csv
-│   ├── duplicates_all.csv
-│   ├── duplicates_extra.csv
-│   └── step2_input_summary.csv
+│   └── step2_summary.csv
 ├── step3/
 │   ├── hr_1min_outlier_cleaned.csv
-│   ├── hr_1min_outliers.csv
 │   └── outlier_summary.csv
 ├── step4/
 │   ├── daily_adherence.csv
-│   ├── daily_adherence__valid_days.csv
-│   ├── valid_day_counts_by_subject.csv
 │   └── valid_day_summary.csv
 ├── step5/
-│   ├── subject_consecutive_summary.csv
 │   ├── subjects_pass.csv
 │   ├── subjects_fail.csv
 │   └── daily_adherence__pass_subjects.csv
 ├── step6/
-│   └── daily_hr_stats__valid_days.csv
+│   ├── daily_hr_stats__valid_days.csv
+│   └── step6_summary.csv
 ├── step7/
-│   ├── merged_metrics.csv
-│   ├── missingness_report.csv
-│   └── missing_by_metric/
-│       ├── missing_rows__steps.csv
-│       └── ...
+│   └── step7_summary.csv
 └── visualization/
-    ├── hist_daily_compliance.pdf
-    ├── hist_daily_compliance.svg
     ├── hist_daily_compliance.png
     └── daily_compliance.csv
 ```
@@ -463,51 +418,12 @@ The pipeline implements comprehensive quality checks:
 6. **Completeness Tracking** - Recording ratios, adherence ratios, missing counts
 7. **Reproducibility** - UTF-8-sig encoding for Excel compatibility
 
-## Best Practices
-
-### For Research Publication
-
-1. **Document Parameters** - Record all threshold values used
-2. **Report Exclusions** - Include counts of duplicates, outliers, excluded days/participants
-3. **Visualize Quality** - Use Step 8 histogram to show adherence distribution
-4. **Archive Raw Data** - Keep original input files unchanged
-5. **Version Control** - Track pipeline version and any customizations
-
-### Performance Tips
-
-1. **Large Datasets** - Process in chunks if memory issues occur
-2. **Parallel Processing** - Steps 1-3 can be run independently if needed
-3. **Skip Optional Steps** - Use `--skip-visualization` or `--skip-missingness` flags
-4. **Intermediate Outputs** - Each step saves outputs for checkpoint recovery
-
-## Troubleshooting
-
-### Common Issues
-
-**Issue: "FileNotFoundError: Input file not found"**
-- Solution: Check that input file paths are correct and files exist
-
-**Issue: "ValueError: Missing required columns"**
-- Solution: Verify input CSV has required columns (subject_id, date, time, hr)
-
-**Issue: "Memory Error"**
-- Solution: Process data in smaller batches or increase available RAM
-
-**Issue: "matplotlib not available" during visualization**
-- Solution: Install matplotlib: `pip install matplotlib`
-
-**Issue: Incorrect date format**
-- Solution: Ensure date column uses "day0", "day1", etc. format
-
-**Issue: Incorrect time format**
-- Solution: Ensure time column uses "HH:MM:SS" format (e.g., "09:30:00")
-
 ## Citation
 
 If you use this pipeline in your research, please cite:
 
 ```
-[Your Citation Here]
+Lee et al., A real-world Fitbit-derived dataset of activity, sleep, and heart rate with matched clinical factors in on-treatment lung cancer patients
 ```
 
 ## License
@@ -527,16 +443,9 @@ Contributions are welcome! Please:
 
 For questions or issues:
 - Open an issue on GitHub
-- Contact: [your-email@domain.com]
-
-## Acknowledgments
-
-This pipeline was developed for processing wearable heart rate data for scientific publication in the Scientific Data journal.
+- Contact: [mass3758@gmail.com, gunwoof1234@gmail.com] 
 
 ## Version History
 
-### Version 1.0.0 (2024)
+### Version 1.0.0 (2026)
 - Initial release
-- Complete pipeline implementation
-- All 8 processing steps
-- Comprehensive documentation

@@ -14,7 +14,6 @@ Modules:
     - step6_extract_hr_stats: Extract daily HR statistics
     - step7_missingness_analysis: Analyze missing data across metrics
     - step8_visualize_adherence: Visualize wear adherence distribution
-    - run_pipeline: Main pipeline orchestrator
 """
 
 __version__ = "1.0.0"

@@ -166,27 +166,42 @@ def run_step4(cfg: Step4Config) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
 
 def main():
-    """Example usage of Step 4."""
+    """
+    Example usage of Step 4.
+
+    This is a template for running Step 4. Modify the paths below to match
+    your data location before running.
+    """
     from pathlib import Path
 
-    # Configure paths
-    base_dir = Path("/app/ai_worker/data_anonymization")
-    input_csv = base_dir / "10-code/Processed_wearable_dataset/step3/hr_1min_outlier_cleaned.csv"
-    outdir = base_dir / "10-code/Processed_wearable_dataset/step4"
+    # =========================================================================
+    # CONFIGURATION - Modify these paths for your environment
+    # =========================================================================
+    input_csv = Path("output/step3/hr_1min_outlier_cleaned.csv")  # Input: outlier-cleaned data from Step 3
+    outdir = Path("output/step4")                                  # Output directory
+
+    # Valid day criteria
+    expected_minutes_per_day = 1440                                # Expected minutes per day (24h * 60min)
+    threshold_ratio = 0.80                                         # Minimum wear ratio (80%)
+    threshold_minutes = 1152                                       # Minimum worn minutes (1440 * 0.80)
+    force_min_day_to_zero = True                                   # Force day index to start from 0
+    normalize_time = True                                          # Normalize time format to HH:MM:SS
+    # =========================================================================
 
     # Create configuration
     config = Step4Config(
         input_csv=input_csv,
         outdir=outdir,
-        expected_minutes_per_day=1440,
-        threshold_ratio=0.80,
-        threshold_minutes=1152,
-        force_min_day_to_zero=True,
-        normalize_time=True
+        expected_minutes_per_day=expected_minutes_per_day,
+        threshold_ratio=threshold_ratio,
+        threshold_minutes=threshold_minutes,
+        force_min_day_to_zero=force_min_day_to_zero,
+        normalize_time=normalize_time
     )
 
     # Run step
     daily, summary = run_step4(config)
+    return daily, summary
 
 
 if __name__ == "__main__":

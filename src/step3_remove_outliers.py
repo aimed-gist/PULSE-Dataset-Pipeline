@@ -137,26 +137,40 @@ def run_step3(cfg: Step3Config) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
 
 def main():
-    """Example usage of Step 3."""
+    """
+    Example usage of Step 3.
+
+    This is a template for running Step 3. Modify the paths below to match
+    your data location before running.
+    """
     from pathlib import Path
 
-    # Configure paths
-    base_dir = Path("/app/ai_worker/data_anonymization")
-    input_csv = base_dir / "10-code/Processed_wearable_dataset/step2/hr_1min_deduped.csv"
-    outdir = base_dir / "10-code/Processed_wearable_dataset/step3"
+    # =========================================================================
+    # CONFIGURATION - Modify these paths for your environment
+    # =========================================================================
+    input_csv = Path("output/step2/hr_1min_deduped.csv")  # Input: deduplicated data from Step 2
+    outdir = Path("output/step3")                          # Output directory
+
+    # Outlier detection settings
+    min_hr = 40.0                                          # Minimum valid HR (bpm)
+    max_hr = 163.0                                         # Maximum valid HR (bpm)
+    outlier_mode = "replace_zero"                          # 'drop' or 'replace_zero'
+    normalize_time = True                                  # Normalize time format to HH:MM:SS
+    # =========================================================================
 
     # Create configuration
     config = Step3Config(
         input_csv=input_csv,
         outdir=outdir,
-        min_hr=40.0,
-        max_hr=163.0,
-        outlier_mode="replace_zero",
-        normalize_time=True
+        min_hr=min_hr,
+        max_hr=max_hr,
+        outlier_mode=outlier_mode,
+        normalize_time=normalize_time
     )
 
     # Run step
     cleaned, summary = run_step3(config)
+    return cleaned, summary
 
 
 if __name__ == "__main__":

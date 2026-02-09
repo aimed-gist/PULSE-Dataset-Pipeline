@@ -105,20 +105,38 @@ def run_step2(cfg: Step2Config) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
 
 def main():
-    """Example usage of Step 2."""
-    base_dir = Path("/app/ai_worker/data_anonymization")
-    input_csv = base_dir / "03-finalPreparationData/4-updateColumn&Type/heartrate_minute.csv"
-    outdir = base_dir / "10-code/Processed_wearable_dataset/step2"
+    """
+    Example usage of Step 2.
 
+    This is a template for running Step 2. Modify the paths below to match
+    your data location before running.
+    """
+    from pathlib import Path
+
+    # =========================================================================
+    # CONFIGURATION - Modify these paths for your environment
+    # =========================================================================
+    input_csv = Path("data/heartrate_minute.csv")  # Input: 1-minute HR data (raw or from Step 1)
+    outdir = Path("output/step2")                   # Output directory
+
+    # Deduplication settings
+    dedup_key = ["subject_id", "date", "time"]     # Columns to identify duplicates
+    keep_policy = "last"                            # Keep 'first' or 'last' duplicate
+    normalize_time = True                           # Normalize time format to HH:MM:SS
+    # =========================================================================
+
+    # Create configuration
     config = Step2Config(
         input_csv=input_csv,
         outdir=outdir,
-        dedup_key=["subject_id", "date", "time"],
-        keep_policy="last",
-        normalize_time=True
+        dedup_key=dedup_key,
+        keep_policy=keep_policy,
+        normalize_time=normalize_time
     )
 
+    # Run step
     df_deduped, summary = run_step2(config)
+    return df_deduped, summary
 
 
 if __name__ == "__main__":
